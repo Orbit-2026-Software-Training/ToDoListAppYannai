@@ -1,13 +1,15 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(todoApp());
 }
 
-List<String> tasks = [];
-List<String> taskCategories = [];
-List<String> taskPriorities = [];
-List<DateTime> taskDuedates = [];
+List<String> tasks = ["Finish Coding Project"];
+List<String> taskCategories = ["Robotics"];
+List<String> taskPriorities = ["High"];
+List<DateTime> taskDuedates = [DateTime.now()];
 
 // ignore: camel_case_types
 class todoApp extends StatelessWidget {
@@ -23,23 +25,58 @@ class todoApp extends StatelessWidget {
 }
 
 class _ToDoListAppState extends StatefulWidget {
-  const _ToDoListAppState({super.key});
+  const _ToDoListAppState();
 
   @override
   __ToDoListAppStateState createState() => __ToDoListAppStateState();
 }
 
 class __ToDoListAppStateState extends State<_ToDoListAppState> {
+  String selectedValue = 'All';
   Color getColor(DateTime dueDate) {
     Duration dateDifference = DateTime.now().difference(dueDate);
     if (dateDifference.inDays > 7) {
       return Colors.red;
-    } else if (dateDifference.inDays < 5) {
-      return Colors.white;
     } else if (dateDifference.inDays >= 5) {
       return Colors.orangeAccent;
     }
     return Colors.white;
+  }
+  void organizeViaUrgency(){
+    int counter = 1;
+    for (int i = 0; i< tasks.length; i++){
+      if(taskPriorities[i] == 'High'){
+        setState(() {
+        taskPriorities.insert(0,taskPriorities[i]);
+        tasks.insert(0,tasks[i]);
+        taskDuedates.insert(0,taskDuedates[i]);
+        taskCategories.insert(0,taskCategories[i]);
+        });
+        counter++;
+      }
+      else if(taskPriorities[i] == 'Medium'){
+        setState(() {
+        taskPriorities.insert(counter,taskPriorities[i]);
+        tasks.insert(counter,tasks[i]);
+        taskDuedates.insert(counter,taskDuedates[i]);
+        taskCategories.insert(counter,taskCategories[i]);
+        });
+      }
+      else{
+        setState(() {
+        taskPriorities.insert(taskPriorities.length,taskPriorities[i]);
+        tasks.insert(taskPriorities.length,tasks[i]);
+        taskDuedates.insert(taskPriorities.length,taskDuedates[i]);
+        taskCategories.insert(taskPriorities.length,taskCategories[i]);
+        });
+      }
+    }
+  }
+  
+  @override
+  void initState(){
+    super.initState();
+    organizeViaUrgency();
   }
 
   @override
@@ -47,11 +84,30 @@ class __ToDoListAppStateState extends State<_ToDoListAppState> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.cyan,
+        actions: [
+          
+          PopupMenuButton<String>(
+            color: Colors.cyan,
+            onSelected: (String value) {
+              setState(() {
+                selectedValue = value;
+              });
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(value: 'Robotics', child: Text('Robotics')),
+              PopupMenuItem(value: 'School', child: Text('School')),
+              PopupMenuItem(value: 'Home', child: Text('Home')),
+              PopupMenuItem(value: 'All', child: Text('All')),
+            ],
+          ),
+        ],
         title: Text('TODO List'),
+        automaticallyImplyLeading: false,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadiusGeometry.circular(11),
         ),
       ),
+
       floatingActionButton: FloatingActionButton.large(
         onPressed: () {
           Navigator.of(context)
@@ -62,65 +118,103 @@ class __ToDoListAppStateState extends State<_ToDoListAppState> {
         child: Icon(Icons.add),
       ),
       backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          Flexible(
-            child: ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Row(
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          tasks[index],
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                        Text(
-                          taskCategories[index],
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                        Text(
-                          taskPriorities[index],
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                        Text(
-                          taskDuedates.toString()[index],
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: getColor(taskDuedates[index]),
+      body: tasks.isEmpty
+          ? Center(
+              child: Text(
+                "No tasks yet",
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            )
+          : Column(
+              children: [
+                Flexible(
+                  child: ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      if (selectedValue == 'Robotics') {
+                        if (!(taskCategories[index] == 'Robotics')) {
+                          return null;
+                        }
+                      } else if (selectedValue == 'School') {
+                        if (!(taskCategories[index] == 'School')) {
+                          return null;
+                        }
+                      } else if (selectedValue == 'Home') {
+                        if (!(taskCategories[index] == 'Home')) {
+                          return null;
+                        }
+                      }
+                      return Row(
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                tasks[index],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                "Category: ${taskCategories[index]}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                "Priority: ${taskPriorities[index]}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                "Due: ${taskDuedates[index].toString()}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: getColor(taskDuedates[index]),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 50),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {},
-                      color: Colors.cyanAccent,
-                    ),
-                  ],
-                );
-              },
+                          SizedBox(width: 50),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              setState(() {
+                                tasks.removeAt(index);
+                                taskCategories.removeAt(index);
+                                taskDuedates.removeAt(index);
+                                taskPriorities.removeAt(index);
+                              });
+                            },
+                            color: Colors.cyanAccent,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
 
 class AddTaskPage extends StatefulWidget {
-  AddTaskPage({Key? key}) : super(key: key);
+  const AddTaskPage({super.key});
 
   @override
   _AddTaskPageState createState() => _AddTaskPageState();
 }
 
 class _AddTaskPageState extends State<AddTaskPage> {
+  TextEditingController inputController = TextEditingController();
   String selectedCategory = "Robotics";
   String defaultPriority = "Low";
   DateTime? selectedDate;
+  String formFieldLabel = "Enter new task: ";
 
   Future<void> _selectDate() async {
     final now = DateTime.now();
@@ -135,7 +229,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        taskDuedates.add(selectedDate!);
       });
     }
   }
@@ -157,12 +250,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextFormField(
-                decoration: InputDecoration(labelText: 'Enter new task'),
-                validator: (value) {
-                  setState(() {
-                    tasks.add(value.toString());
-                  });
-                },
+                decoration: InputDecoration(labelText: formFieldLabel),
+                controller: inputController,
               ),
             ),
             SizedBox(height: 40),
@@ -175,7 +264,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               onChanged: (String? newValue) {
                 setState(() {
                   selectedCategory = newValue!;
-                  taskCategories.add(selectedCategory);
                 });
               },
               items: <String>['Robotics', 'School', 'Home']
@@ -197,7 +285,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               onChanged: (String? newValue) {
                 setState(() {
                   defaultPriority = newValue!;
-                  taskPriorities.add(defaultPriority);
                 });
               },
               items: <String>['Low', 'Medium', 'High']
@@ -222,26 +309,43 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
             ),
             SizedBox(height: 50),
-             Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyan,
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+                  onPressed: () {
+                    if (inputController.text.isEmpty) {
+                      setState(() {
+                        formFieldLabel = "Cannot add empty task";
+                      });
+                    } else {
+                      setState(() {
+                        tasks.add(inputController.text);
+                        taskCategories.add(selectedCategory);
+                        taskPriorities.add(defaultPriority);
+                        taskDuedates.add(selectedDate ?? DateTime.now());
+                      });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => _ToDoListAppState(),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text('Save'),
                 ),
-                onPressed: () {},
-                child: Text('Save'),        
-              ),
-              SizedBox(width:20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyan,
+                SizedBox(width: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.cyan),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel'),
                 ),
-                onPressed: () {},
-                child: Text('Cancel'),        
-              ),
               ],
-             ),
+            ),
           ],
         ),
       ),
