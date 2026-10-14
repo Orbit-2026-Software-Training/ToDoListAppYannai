@@ -43,34 +43,24 @@ class __ToDoListAppStateState extends State<_ToDoListAppState> {
     return Colors.white;
   }
   void organizeViaUrgency(){
-    int counter = 1;
-    for (int i = 0; i< tasks.length; i++){
-      if(taskPriorities[i] == 'High'){
-        setState(() {
-        taskPriorities.insert(0,taskPriorities[i]);
-        tasks.insert(0,tasks[i]);
-        taskDuedates.insert(0,taskDuedates[i]);
-        taskCategories.insert(0,taskCategories[i]);
-        });
-        counter++;
-      }
-      else if(taskPriorities[i] == 'Medium'){
-        setState(() {
-        taskPriorities.insert(counter,taskPriorities[i]);
-        tasks.insert(counter,tasks[i]);
-        taskDuedates.insert(counter,taskDuedates[i]);
-        taskCategories.insert(counter,taskCategories[i]);
-        });
-      }
-      else{
-        setState(() {
-        taskPriorities.insert(taskPriorities.length,taskPriorities[i]);
-        tasks.insert(taskPriorities.length,tasks[i]);
-        taskDuedates.insert(taskPriorities.length,taskDuedates[i]);
-        taskCategories.insert(taskPriorities.length,taskCategories[i]);
-        });
-      }
-    }
+    setState(() {
+
+      List<int> indices = List.generate(tasks.length, (index) => index);
+      
+      indices.sort((a, b) => taskDuedates[a].compareTo(taskDuedates[b]));
+
+      List<String> sortedTasks = indices.map((i) => tasks[i]).toList();
+      List<String> sortedCategories = indices.map((i) => taskCategories[i]).toList();
+      List<String> sortedPriorities = indices.map((i) => taskPriorities[i]).toList();
+      List<DateTime> sortedDuedates = indices.map((i) => taskDuedates[i]).toList();
+
+      tasks = sortedTasks;
+      taskCategories = sortedCategories;
+      taskPriorities = sortedPriorities;
+      taskDuedates = sortedDuedates;
+    });
+  
+    
   }
   
   @override
